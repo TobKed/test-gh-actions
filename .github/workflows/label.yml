@@ -21,26 +21,11 @@ on: pull_request_review
 
 jobs:
 
-  test-info:
-    name: "Test info"
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_CONTEXT: ${{ toJson(github) }}
-    steps:
-      - name: "Checkout ${{ github.ref }} ( ${{ github.sha }} )"
-        uses: actions/checkout@v2
-      - name: >
-          Event: ${{ github.event_name }}
-          Repo: ${{ github.repository }}
-          Branch: ${{ github.head_ref }}
-          Run id: ${{ github.run_id }}
-          Sha: ${{ github.sha }}
-          Ref: ${{ github.ref }}
-        run: printenv
-
   label-when-approved:
     name: "Label when approved"
     runs-on: ubuntu-latest
+    env:
+      GITHUB_CONTEXT: ${{ toJson(github) }}
     steps:
       - name: "Checkout ${{ github.ref }} ( ${{ github.sha }} )"
         uses: actions/checkout@v2
