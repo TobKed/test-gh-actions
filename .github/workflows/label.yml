@@ -1,0 +1,65 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+---
+name: Label when approved
+on: pull_request_review
+
+jobs:
+
+  test-info:
+    name: "Test info"
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_CONTEXT: ${{ toJson(github) }}
+    steps:
+      - name: "Checkout ${{ github.ref }} ( ${{ github.sha }} )"
+        uses: actions/checkout@v2
+      - name: >
+          Event: ${{ github.event_name }}
+          Repo: ${{ github.repository }}
+          Branch: ${{ github.head_ref }}
+          Run id: ${{ github.run_id }}
+          Sha: ${{ github.sha }}
+          Ref: ${{ github.ref }}
+        run: printenv
+
+  label-when-approved:
+    name: "Label when approved"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout ${{ github.ref }} ( ${{ github.sha }} )"
+        uses: actions/checkout@v2
+      - name: >
+          Event: ${{ github.event_name }}
+          Repo: ${{ github.repository }}
+          Branch: ${{ github.head_ref }}
+          Run id: ${{ github.run_id }}
+          Sha: ${{ github.sha }}
+          Ref: ${{ github.ref }}
+        run: printenv
+      - name: Label when approved
+        uses: TobKed/label-when-approved-action@develop
+        id: label-when-approved
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sourceRunId: ${{ github.event.workflow_run.id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PULL_REQUEST_NR: ${{ github.event.pull_request.number }}
+          REQUIRED_APPROVALS_BY_COMMITERS: "true"
+          APPROVED_LABEL: "Approved"
