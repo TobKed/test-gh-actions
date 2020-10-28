@@ -56,5 +56,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           label: "Approved by anyone from workflow run"
           comment: "Approved by anyone from workflow run"
-          pullRequestNumber: ${{ steps.workflow-run-info.outputs.pullRequestNumber }}
+          pullRequestNumber: ${{ steps.source-run-info.outputs.pullRequestNumber }}
 
