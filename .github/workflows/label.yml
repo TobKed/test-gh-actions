@@ -68,35 +68,35 @@ jobs:
 #        run: echo isApprovedByAnyone ${{needs.label-when-approved-test-example.outputs.isApprovedByAnyone}}
 
 
-#  label-when-approved-extended:
-#    name: "Label when approved anyone"
-#    runs-on: ubuntu-latest
-#    env:
-#      GITHUB_CONTEXT: ${{ toJson(github) }}
-#    steps:
-#      - name: "Checkout ${{ github.ref }} ( ${{ github.sha }} )"
-#        uses: actions/checkout@v2
-#      - name: >
-#          Event: ${{ github.event_name }}
-#          Repo: ${{ github.repository }}
-#          Branch: ${{ github.head_ref }}
-#          Run id: ${{ github.run_id }}
-#          Sha: ${{ github.sha }}
-#          Ref: ${{ github.ref }}
-#        run: printenv
-#      - name: Label when approved by commiters
-#        uses: TobKed/label-when-approved-action@develop
-#        id: label-when-approved
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          label: 'ready to merge (committers) - test'
-#          require_committers_approval: 'true'
-#
-#      - name: Label when approved by anyone
-#        uses: TobKed/label-when-approved-action@develop
-#        id: label-when-approved-2
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          label: 'ready to marge (all) - test'
-#          require_committers_approval: 'false'
-#          comment: 'ready to marge (all) - test - test comment body'
+  label-when-approved-extended:
+    name: "Label when approved anyone"
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_CONTEXT: ${{ toJson(github) }}
+    steps:
+      - name: "Checkout ${{ github.ref }} ( ${{ github.sha }} )"
+        uses: actions/checkout@v2
+      - name: >
+          Event: ${{ github.event_name }}
+          Repo: ${{ github.repository }}
+          Branch: ${{ github.head_ref }}
+          Run id: ${{ github.run_id }}
+          Sha: ${{ github.sha }}
+          Ref: ${{ github.ref }}
+        run: printenv
+      - name: Label when approved by commiters
+        uses: TobKed/label-when-approved-action@develop
+        id: label-when-approved
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          label: 'ready to merge (committers) - test'
+          require_committers_approval: 'true'
+
+      - name: Label when approved by anyone
+        uses: TobKed/label-when-approved-action@develop
+        id: label-when-approved-2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          label: 'ready to marge (all) - test'
+          require_committers_approval: 'false'
+          comment: 'ready to marge (all) - test - test comment body'
