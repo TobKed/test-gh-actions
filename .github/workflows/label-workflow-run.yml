@@ -44,7 +44,7 @@ jobs:
           Ref: ${{ github.ref }}
         run: printenv
       - name: "Get information about the original trigger of the run"
-        uses: potiuk/get-workflow-origin@main
+        uses: potiuk/get-workflow-origin@15d83ef87a7549dc36622ec5bbe20e15849cecf7
         id: source-run-info
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
