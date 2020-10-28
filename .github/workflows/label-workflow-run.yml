@@ -43,6 +43,12 @@ jobs:
           Sha: ${{ github.sha }}
           Ref: ${{ github.ref }}
         run: printenv
+      - name: "Get information about the original trigger of the run"
+        uses: potiuk/get-workflow-origin@main
+        id: source-run-info
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sourceRunId: ${{ github.event.workflow_run.id }}
       - name: Label when approved by anyone
         uses: TobKed/label-when-approved-action@develop
         id: label-when-approved-by-anyone
@@ -50,4 +56,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           label: "Approved by anyone from workflow run"
           comment: "Approved by anyone from workflow run"
-          sourceRunId: ${{ github.event.workflow_run.id }}
+          pullRequestNumber: ${{ steps.workflow-run-info.outputs.pullRequestNumber }}
+
