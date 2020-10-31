@@ -1,0 +1,101 @@
+name: Fetch GitHub Action queue
+on:  # yamllint disable-line rule:truthy
+  push:
+  schedule:
+    # Run quarantined builds 4 times a day to gather better quarantine stats
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+
+jobs:
+
+  check_gcp_variables:
+    timeout-minutes: 5
+    name: "Check GCP variables"
+    runs-on: ubuntu-latest
+    outputs:
+      gcp-variables-set: ${{ steps.check_gcp_variables.outputs.gcp-variables-set }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Check are GCP variables set"
+        run: "./check_are_gcp_variables_set.sh"
+        id: check_gcp_variables
+        env:
+          GCP_SA_EMAIL: ${{ secrets.GCP_SA_EMAIL }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
+
+
+  github-actions-fetch-queue-apache-airflow:
+    name: "Github Action fetch queue Apache Airflow"
+    runs-on: ubuntu-latest
+    needs: check_gcp_variables
+    steps:
+    - name: Fetch GitHub Action queue
+      uses: TobKed/fetch-github-actions-queue@develop
+      id: fetch-queue
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        repository: apache/airflow
+    - name: Save to JSON
+      run: |
+        TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
+        JSON_FILE="${TIMESTAMP}.json"
+        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} > "${JSON_FILE}"
+        # write headers
+        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r '''.[0] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries | map([.key, .value] | "\(.[0])") | join(",")''' > "${TIMESTAMP}.csv"
+        # append rows
+        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r '''.[] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries  | map([.key, .value] | "\(.[1])") | join(",")''' >> "${TIMESTAMP}.csv"
+    - name: Upload stats as artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: airflow-stats
+        path: |
+          *.json
+          *.csv
+    - name: Authenticate on GCP
+      if: needs.check_gcp_variables.outputs.gcp-variables-set == 'true'
+      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+    - name: Copy stats to GCS bucket
+      if: needs.check_gcp_variables.outputs.gcp-variables-set == 'true'
+      run: gsutil cp -a public-read *.json ${{ secrets.GCP_BUCKET }}/airflow/
+
+#  github-actions-fetch-queue-apache-beam:
+#    name: "Github Action fetch queue Apache Beam"
+#    runs-on: ubuntu-latest
+#    needs: check_gcp_variables
+#    steps:
+#      - name: Fetch GitHub Action queue
+#        uses: TobKed/fetch-github-actions-queue@develop
+#        id: fetch-queue
+#        with:
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          repository: apache/beam
+#      - name: Save to JSON
+#        run: |
+#          TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
+#          JSON_FILE="${TIMESTAMP}.json"
+#          echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} > "${JSON_FILE}"
+##          # write headers
+##          cat "${JSON_FILE}" | jq -r '.[0] | [paths(scalars) as $path | {"key": $path | join("."), "value": getpath($path)}] | from_entries | to_entries  | map([.key, .value] | .[0]) | join(",")' > "${TIMESTAMP}".csv
+##          # append rows
+##          cat "${JSON_FILE}" | jq -r '.[] | [paths(scalars) as $path | {"key": $path | join("."), "value": getpath($path)}] | from_entries | to_entries  | map([.key, .value] | .[1]) | join(",")' >> "${TIMESTAMP}".csv
+#      - name: Upload stats as artifacts
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: beam-stats
+#          path: |
+#            *.json
+#            *.csv
+#      - name: Authenticate on GCP
+#        if: needs.check_gcp_variables.outputs.gcp-variables-set == 'true'
+#        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+#        with:
+#          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+#          service_account_key: ${{ secrets.GCP_SA_KEY }}
+#      - name: Copy stats to GCS bucket
+#        if: needs.check_gcp_variables.outputs.gcp-variables-set == 'true'
+#        run: gsutil cp -a public-read *.json ${{ secrets.GCP_BUCKET }}/beam/

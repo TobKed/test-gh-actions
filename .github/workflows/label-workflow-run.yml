@@ -57,4 +57,3 @@ jobs:
           label: "Approved by anyone from workflow run"
           comment: "Approved by anyone from workflow run"
           pullRequestNumber: ${{ steps.source-run-info.outputs.pullRequestNumber }}
-

@@ -38,36 +38,6 @@ jobs:
           Ref: ${{ github.ref }}
         run: printenv
 
-#  label-when-approved-test-example:
-#    name: "Label when approved by commiters"
-#    runs-on: ubuntu-latest
-#    outputs:
-#      isApprovedByCommiters: ${{ steps.label-when-approved-by-commiters.outputs.isApproved }}
-#      isApprovedByAnyone: ${{ steps.label-when-approved-by-anyone.outputs.isApproved }}
-#    steps:
-#      - name: Label when approved by commiters
-#        uses: TobKed/label-when-approved-action@develop
-#        id: label-when-approved-by-commiters
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          label: 'ready to merge (committers) - example'
-#          require_committers_approval: 'true'
-#      - name: Label when approved by anyone
-#        uses: TobKed/label-when-approved-action@develop
-#        id: label-when-approved-by-anyone
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#
-#  test-example-output:
-#    runs-on: ubuntu-latest
-#    needs: label-when-approved-test-example
-#    steps:
-#      - name: isApprovedByCommiters
-#        run: echo isApprovedByCommiters ${{needs.label-when-approved-test-example.outputs.isApprovedByCommiters}}
-#      - name: isApprovedByCommiters
-#        run: echo isApprovedByAnyone ${{needs.label-when-approved-test-example.outputs.isApprovedByAnyone}}
-
-
   label-when-approved-extended:
     name: "Label when approved anyone"
     runs-on: ubuntu-latest
