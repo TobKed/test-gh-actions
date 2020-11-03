@@ -43,9 +43,9 @@ jobs:
         JSON_FILE="${TIMESTAMP}.json"
         echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} > "${JSON_FILE}"
         ## write headers
-        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r -S '''.[0] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries | map([.key, .value] | "\(.[0])") | join(",")''' > "${TIMESTAMP}.csv"
+        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r -S '''.[0] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries | map([.key, .value] |= sort_by(.[0]) | "\(.[0])") | join(",")''' > "${TIMESTAMP}.csv"
         ## append rows
-        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r -S '''.[] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries  | map([.key, .value] | "\(.[1])") | join(",")''' >> "${TIMESTAMP}.csv"
+        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r -S '''.[] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries  | map([.key, .value] |= sort_by(.[0]) | "\(.[1])") | join(",")''' >> "${TIMESTAMP}.csv"
     - name: Upload stats as artifacts
       uses: actions/upload-artifact@v2
       with:
