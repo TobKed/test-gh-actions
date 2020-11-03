@@ -15,6 +15,7 @@ additional_data = args.additional_data
 if additional_data is not None:
     additional_data = json.loads(additional_data)
 
+
 def flatten_json(y):
     out = {}
 
