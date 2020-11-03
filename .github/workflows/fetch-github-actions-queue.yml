@@ -45,11 +45,11 @@ jobs:
         repository: apache/airflow
     - name: Save to JSON
       run: |
-        TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
+        TIMESTAMP=`date --utc +%Y%m%d_%H%M%SZ`
         TIMESTAMP_ISO8601=`date --utc +%FT%T%Z`
         JSON_FILE="${TIMESTAMP_ISO8601}.json"
         echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} > "${JSON_FILE}"
-        python json_to_csv.py -i $JSON_FILE -o "${TIMESTAMP}.csv" -a "{\"write_timestamp\":\"${TIMESTAMP_ISO8601}\"}"
+        python json_to_csv.py -i $JSON_FILE -o "${TIMESTAMP}.csv" -a "{\"write_timestamp\":\"${TIMESTAMP}\"}"
     - name: Upload stats as artifacts
       uses: actions/upload-artifact@v2
       with:
