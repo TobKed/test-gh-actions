@@ -42,16 +42,17 @@ jobs:
         TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
         JSON_FILE="${TIMESTAMP}.json"
         echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} > "${JSON_FILE}"
-        # write headers
-        # echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r '''.[0] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries | map([.key, .value] | "\(.[0])") | join(",")''' > "${TIMESTAMP}.csv"
-        # append rows
-        # echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r '''.[] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries  | map([.key, .value] | "\(.[1])") | join(",")''' >> "${TIMESTAMP}.csv"
+        ## write headers
+        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r '''.[0] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries | map([.key, .value] | "\(.[0])") | join(",")''' > "${TIMESTAMP}.csv"
+        ## append rows
+        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r '''.[] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries  | map([.key, .value] | "\(.[1])") | join(",")''' >> "${TIMESTAMP}.csv"
     - name: Upload stats as artifacts
       uses: actions/upload-artifact@v2
       with:
         name: airflow-stats
         path: |
           *.json
+          *.csv
     - name: Authenticate on GCP
       if: needs.check_gcp_variables.outputs.gcp-variables-set == 'true'
       uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
@@ -84,6 +85,7 @@ jobs:
           name: beam-stats
           path: |
             *.json
+            *.csv
       - name: Authenticate on GCP
         if: needs.check_gcp_variables.outputs.gcp-variables-set == 'true'
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
