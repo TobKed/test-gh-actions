@@ -20,6 +20,7 @@ def flatten_json(y):
     out = {}
 
     def flatten(x, name=""):
+
         # pull_requests may vary in length
         # it mess with csv headers
         if name == "pull_requests.":
@@ -33,8 +34,8 @@ def flatten_json(y):
                 flatten(a, name + str(i) + ".")
                 i += 1
         else:
+            x = x.replace('\n', ' ').replace('\r', ' ')
             out[name[:-1]] = x
-
     flatten(y)
     return out
 
