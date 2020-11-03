@@ -31,6 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: check_gcp_variables
     steps:
+    - name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
     - name: Fetch GitHub Action queue
       uses: TobKed/fetch-github-actions-queue@develop
       id: fetch-queue
@@ -42,10 +46,7 @@ jobs:
         TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
         JSON_FILE="${TIMESTAMP}.json"
         echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} > "${JSON_FILE}"
-        ## write headers
-        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r -S '''.[0] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries | map([.key, .value] | "\(.[0])") | join(",")''' > "${TIMESTAMP}.csv"
-        ## append rows
-        echo ${{ toJson(steps.fetch-queue.outputs.workflowRuns) }} | sed 's/\\n/\ /g' | sed 's/\\r/\ /g' | jq -r ".[] |= . + {\"read_date\": \"${TIMESTAMP}\"}" | jq -r -S '''.[] | [paths(scalars) as $path | {"key": $path | map(. | "\(.)") | join(":"), "value": getpath($path)}] | from_entries | to_entries  | map([.key, .value] | "\(.[1])") | join(",")''' >> "${TIMESTAMP}.csv"
+        python json_to_csv.py -i $JSON_FILE -u "${TIMESTAMP}.csv" -a "{\"write_timestamp\":\"${TIMESTAMP}\"}"
     - name: Upload stats as artifacts
       uses: actions/upload-artifact@v2
       with:
