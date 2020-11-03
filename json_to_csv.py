@@ -34,7 +34,8 @@ def flatten_json(y):
                 flatten(a, name + str(i) + ".")
                 i += 1
         else:
-            x = x.replace('\n', ' ').replace('\r', ' ')
+            if isinstance(x, str):
+                x = x.replace('\n', '\\n').replace('\r', '\\r')
             out[name[:-1]] = x
     flatten(y)
     return out
