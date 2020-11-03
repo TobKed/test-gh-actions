@@ -20,7 +20,8 @@ def flatten_json(y):
     out = {}
 
     def flatten(x, name=""):
-        # print(name)
+        # pull_requests may vary in length
+        # it mess with csv headers
         if name == "pull_requests.":
             out[name[:-1]] = x
         elif type(x) is dict:

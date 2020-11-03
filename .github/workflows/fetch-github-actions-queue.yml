@@ -31,6 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: check_gcp_variables
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Install Python
       uses: actions/setup-python@v2
       with:
@@ -62,7 +64,9 @@ jobs:
         service_account_key: ${{ secrets.GCP_SA_KEY }}
     - name: Copy stats to GCS bucket
       if: needs.check_gcp_variables.outputs.gcp-variables-set == 'true'
-      run: gsutil cp -a public-read *.json ${{ secrets.GCP_BUCKET }}/apache/airflow/
+      run: |
+        gsutil cp -a public-read *.json ${{ secrets.GCP_BUCKET }}/apache/airflow/
+        gsutil cp -a public-read *.csv ${{ secrets.GCP_BUCKET }}/apache/airflow/
 
   github-actions-fetch-queue-apache-beam:
     name: "Github Action fetch queue Apache Beam"
